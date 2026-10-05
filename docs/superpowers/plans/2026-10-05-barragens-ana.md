@@ -1,6 +1,6 @@
 # Plano de implementação do banco de barragens ANA
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Execute as tarefas em sequência com o GPT Luna, revisando cada entrega antes de seguir. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development to implement this plan task-by-task, with GPT Luna as implementer and a separate review after each task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** entregar um banco PostgreSQL em 3FN, totalmente populado a partir do CSV da ANA, com scripts SQL reproduzíveis e material para explicar a modelagem e escrever consultas na apresentação.
 
@@ -18,7 +18,7 @@
 - O CSV real tem 887 registros, 33 colunas, delimitador vírgula e nenhuma linha malformada. SHA-256: `ae9f20fc1e084ed48a0187f7cfba648c71a7a13f8fa13379cbe1df32be029aef`.
 - Equipe: Alexandre Arthur, Enrique Luis e Renan Gomes.
 - O repositório remoto `renancesupa/projeto-banco-de-dados` existe, mas está vazio. A conexão GitHub informa `push: false`; o trabalho está sendo preparado no clone local, em um branch novo, e a publicação aguarda uma conexão com permissão de escrita.
-- O ambiente ainda precisa ser verificado para confirmar disponibilidade do PostgreSQL e cliente SQL.
+- PostgreSQL 18.4 está instalado em `/Library/PostgreSQL/18/bin`; o serviço não está respondendo na porta padrão. Pode-se iniciar um cluster de teste isolado em `/private/tmp` para validar os scripts sem tocar em bancos do usuário.
 
 ## Global Constraints
 
@@ -120,7 +120,7 @@ Durante o desenvolvimento, usar as pastas diretamente na raiz do workspace. Cria
 7. Sem CSV real não há declaração de “projeto completo”. Sem PostgreSQL executado não há declaração de “scripts testados”.
 8. Se houver repositório Git existente, fazer um commit local por tarefa concluída, incluindo apenas os arquivos daquela tarefa. Não criar repositório nem enviar alterações remotamente só por exigência da skill.
 
-## Tarefa 1 — Confirmar as entradas e analisar o CSV
+### Task 1 — Confirmar as entradas e analisar o CSV
 
 **Files:** criar `dados/originais/ana_barragens_hidreletricas.csv`, `scripts/01_analisar_csv.py`, `dados/analise/perfil_csv.json`, `dados/analise/mapeamento_colunas.csv` e `docs/07_checklist_avaliacao.md`.
 
@@ -159,45 +159,38 @@ def resumir_coluna(linhas, indice):
 - [x] Criar a matriz de cobertura com campos `ordem_coluna`, `coluna_original`, `tabela_destino`, `coluna_destino`, `tipo`, `tratamento`, `como_reconstruir`. Completar os destinos na tarefa 2, antes de escrever DDL.
 - [x] **Aceite:** leitura completa sem linha ignorada; perfil de todas as colunas; hash registrado; entradas disponíveis. Não avançar para modelagem definitiva sem esse aceite.
 
-## Tarefa 2 — Definir a modelagem e provar a 3FN
+### Task 2 — Definir a modelagem e provar a 3FN
 
-**Files:** criar `dados/analise/dependencias_funcionais.md`, `docs/01_modelagem.md`, `docs/02_dicionario_dados.md`, `docs/03_decisoes_dados.md`; completar `dados/analise/mapeamento_colunas.csv` e refinar este plano.
+**Files:** criar dados/analise/dependencias_funcionais.md, docs/01_modelagem.md, docs/02_dicionario_dados.md, docs/03_decisoes_dados.md; completar dados/analise/mapeamento_colunas.csv.
 
-**Interfaces:** consome perfil e CSV; produz esquema definitivo, cardinalidades, PK/FK, tipos, nulidade, restrições e mapa completo de reconstrução. As tarefas 3–6 devem usar exatamente esses nomes.
+**Interfaces:** consome perfil e CSV; fixa nomes, chaves, FKs, tipos, nulidade e reconstrução. Tarefas 3–6 devem usar exatamente este esquema.
 
-- [ ] Identificar a chave de barragem na fonte. Se não for única e válida, usar uma PK artificial e manter o identificador original sem impor unicidade falsa. Preservar observações repetidas; não colapsar duas linhas só porque seus textos coincidem.
-- [ ] Para cada dependência candidata `A -> B`, agrupar pelo valor de A e listar quantos valores distintos de B aparecem, sem limpar o texto original. Usar este padrão simples na análise:
+**Esquema definitivo:** dimensões uf(sigla), municipio(id_municipio, uf_sigla, nome), empreendedor(id_empreendedor, nome), regiao_hidrografica(id_regiao_hidrografica, nome), comite_federal(id_comite_federal, nome), comite_estadual(id_comite_estadual, nome) e unidade_gestao(id_unidade_gestao, nome). municipio referencia uf.sigla e tem UNIQUE(uf_sigla, nome). Cada dimensão de rótulo usa chave identity e nome UNIQUE.
 
-```python
-def conflitos_dependencia(linhas, indices_chave, indice_valor):
-    grupos = {}
-    for linha in linhas:
-        chave = tuple(linha[i] for i in indices_chave)
-        grupos.setdefault(chave, set()).add(linha[indice_valor])
-    return {chave: valores for chave, valores in grupos.items()
-            if len(valores) > 1}
-```
+barragem usa cod_snisb TEXT como PK. Colunas: cod_fiscalizador, nome, altura_fundacao_m, altura_terreno_m, capacidade_reservatorio_texto, capacidade_reservatorio_padronizada, data_cadastro, tipo_material, uso_principal, latitude, longitude, regulada_pnsb, id_empreendedor, id_municipio, fase_vida, orgao_fiscalizador, numero_autorizacao, data_autorizacao, id_regiao_hidrografica, cod_trecho_curso_dagua, curso_dagua, dominio_curso_dagua, id_comite_federal, id_comite_estadual, id_unidade_gestao, possui_pae, possui_plano_seguranca, possui_revisao_periodica, categoria_risco, dano_potencial_associado, barragem_autuada e completude_cadastro. Tipos e nulidade constam no dicionário.
 
-- [ ] Conferir município e UF juntos: nomes de municípios podem se repetir entre estados. Só usar código de município como chave natural se existir e for confiável. Não inferir município pela grafia isolada.
-- [ ] Avaliar curso d'água, região hidrográfica, comitês e unidade de gestão separadamente. Não assumir que município determina curso d'água, que nome de rio é único ou que um comitê tem uma única região. Resultado sem conflito no CSV é evidência amostral, não prova de regra universal.
-- [ ] Definir entidades candidatas apenas quando sustentadas: barragem, empreendedor, UF, município, curso d'água, região hidrográfica, comitê e unidade de gestão. Manter atributos categóricos diretamente quando uma tabela só acrescentaria um ID sem benefício; justificar cada caso.
-- [ ] Se houver comitês múltiplos, confirmar o delimitador real, criar relação N:N e guardar ordem/representação necessária para reconstruir a fonte. Não dividir nomes por vírgula automaticamente.
-- [ ] Tratar constantes: escolher campo mantido, tabela de metadados de uma linha ou domínio adequado. Nunca eliminar silenciosamente uma coluna. Uma constante deve aparecer no mapeamento e na exportação de reconstrução.
-- [ ] Tratar capacidade: manter representação original e unidade informada. Usar `NUMERIC` apenas para valores interpretáveis, com `Decimal` no apoio Python. Não assumir m³/hm³, não inferir unidade pela magnitude, não corrigir por fator 1.000.000 sem evidência. Valor convertido só se houver unidade comprovada; registrar a regra e a fonte. Preservar texto ambíguo e deixar a medida padronizada nula nesse caso.
-- [ ] Aplicar a mesma preservação às outras transformações: espaços, casas decimais, coordenadas e marcadores de ausência. Guardar texto original quando necessário para reconstrução exata. Um arquivo original arquivado sozinho não comprova que o banco preserva cada informação.
-- [ ] Escolher uma estratégia de rastreabilidade: número da linha em registro de origem ligado à entidade, ou chave que identifique cada observação. Evitar duplicar todo o CSV numa tabela persistente desnormalizada para afirmar 3FN. Staging pode ser temporário; o esquema final deve ser normalizado.
-- [ ] Explicar 1FN (valores atômicos), 2FN (sem dependência parcial) e 3FN (sem dependência transitiva de atributos não chave). Para cada tabela, listar chave, dependências e por que os atributos pertencem a ela. Justificar textos originais como evidência da observação quando a transformação for ambígua ou não reversível.
-- [ ] Criar diagrama Mermaid e dicionário. Preencher o destino e a reconstrução de todas as colunas e incorporar os nomes definitivos nos exemplos de consultas deste plano.
-- [ ] **Aceite:** 33 colunas mapeadas, ou quantidade real documentada; nenhuma coluna omitida; cardinalidades justificadas; nenhuma dependência contradita ignorada; política de capacidade explícita; esquema pronto para DDL.
+Procedência: registro_origem(id_registro PK, numero_linha UNIQUE NOT NULL, cod_snisb FK UNIQUE NOT NULL); campo_origem(ordem_coluna PK, nome_original UNIQUE NOT NULL); valor_origem(id_registro FK, ordem_coluna FK, valor_original TEXT NOT NULL, PK(id_registro, ordem_coluna)). registro_origem.cod_snisb referencia barragem.cod_snisb. Não criar tabela-ponte. Strings vazias ficam como '' em valor_origem. As 887 linhas recebem id_registro independente.
 
-## Tarefa 3 — Escrever DDL claro e completo
+- [x] Identificar cod_snisb como chave natural: 887 valores não vazios e distintos. Preservar cada linha por id_registro e numero_linha.
+- [x] Agrupar dependências com texto literal: municipio→UF tem 5 conflitos; cod_trecho→nome/domínio, 25; curso→região, 22; empreendedor→UF, 26; rótulos de comitê/unidade cruzam regiões. Evidências em dados/analise/dependencias_funcionais.md.
+- [x] Modelar municipio com UF; manter curso, código e domínio em barragem e região separada. Não inferir município pelo nome nem região pelo rio.
+- [x] Comitês são células escalares sem delimitador de lista confirmado; não dividir vírgulas em nomes. Manter FKs opcionais para comitê federal, comitê estadual e unidade.
+- [x] Manter as cinco colunas constantes em barragem; não descartar nem criar restrições que generalizem a amostra.
+- [x] Manter capacidade como texto; capacidade_reservatorio_padronizada NUMERIC fica NULL sem unidade comprovada.
+- [x] Preservar textos em valor_origem; números tipados usam Decimal, datas ISO tornam-se DATE e true/false tornam-se BOOLEAN. Original preserva zeros, espaços e grafia.
+- [x] Confirmar 887 × 33 = 29.271 células no CSV. Tarefa 4 carrega e Tarefa 5 compara as 29.271 células do banco.
+- [x] Produzir diagrama Mermaid, dicionário, decisões e mapa de 33 colunas com destino e regra de reconstrução.
+- [x] Aceite de modelagem: nenhuma coluna omitida; cardinalidades e conflitos documentados; capacidade tratada; nomes prontos para DDL.
+
+### Task 3 — Escrever DDL claro e completo
 
 **Files:** criar `sql/01_criacao.sql` e `sql/05_testes_restricoes.sql`; atualizar dicionário.
 
 **Interfaces:** consome esquema definitivo; produz banco estruturalmente válido em PostgreSQL vazio. A carga depende de seus nomes e da ordem das FKs.
 
 - [ ] Escrever primeiro os casos de rejeição esperados: PK repetida, FK inexistente, campo realmente obrigatório nulo, unicidade natural comprovada violada e valor inválido para um CHECK legítimo.
-- [ ] Criar tabelas de referência antes das tabelas dependentes, dentro de `BEGIN;` e `COMMIT;`. Não usar `DROP DATABASE`, não apagar o banco do usuário e não esconder erros com `IF NOT EXISTS` generalizado.
+- [ ] Criar nesta ordem: uf, municipio, empreendedor, regiao_hidrografica, comite_federal, comite_estadual, unidade_gestao, barragem, registro_origem, campo_origem e valor_origem; usar BEGIN e COMMIT.
+- [ ] Implementar registro_origem(id_registro, numero_linha, cod_snisb), campo_origem(ordem_coluna, nome_original) e valor_origem(id_registro, ordem_coluna, valor_original) exatamente como na Tarefa 2; cod_snisb referencia barragem e a PK composta impede célula duplicada.
 - [ ] Usar `INTEGER GENERATED BY DEFAULT AS IDENTITY` para IDs artificiais e `TEXT`, `NUMERIC` e `BOOLEAN` quando representarem corretamente a fonte. Usar booleano somente com correspondência documentada de todos os valores.
 - [ ] Nomear restrições e adicionar PK, FK, `NOT NULL`, `UNIQUE` e `CHECK` onde os dados e o domínio permitirem. Campos ausentes não recebem valores inventados para satisfazer `NOT NULL`.
 - [ ] Coordenadas numéricas confirmadas admitem CHECK de latitude entre -90 e 90 e longitude entre -180 e 180. Se a fonte violar isso, preservar o original e documentar a anomalia antes de escolher uma representação compatível. Não excluir a linha.
@@ -205,13 +198,14 @@ def conflitos_dependencia(linhas, indices_chave, indice_valor):
 - [ ] Construir testes negativos em transações isoladas com `ROLLBACK`, executadas separadamente dos scripts de entrega. `BEGIN; ... INSERT inválido ... ROLLBACK;` deve produzir o erro esperado e deixar os dados válidos intactos.
 - [ ] **Aceite:** DDL executa em banco vazio; dicionário corresponde ao SQL; restrições rejeitam seus casos negativos; dados legítimos da fonte são representáveis.
 
-## Tarefa 4 — Gerar carga SQL autossuficiente
+### Task 4 — Gerar carga SQL autossuficiente
 
 **Files:** criar `scripts/02_gerar_carga.py` e `sql/02_carga.sql`; atualizar `docs/03_decisoes_dados.md`.
 
 **Interfaces:** recebe CSV e mapeamento aprovados; produz SQL com todos os valores incorporados, sem depender de Python, CSV externo ou caminho do computador durante a execução pelo professor.
 
 - [ ] Usar `INSERT INTO tabela (colunas...) VALUES (...);`, com colunas explícitas. É suficiente para 887 registros e mais fácil de demonstrar que um fluxo de importação dependente de caminhos.
+- [ ] Gerar 887 linhas de origem, 33 definições de campo e exatamente 29.271 valores de origem, incluindo todos os campos vazios. A carga deve preservar os 33 textos originais como strings CSV.
 - [ ] Criar verificações do escape antes de gerar a carga. Usar o padrão abaixo para texto e ausência; números válidos devem ter serialização própria com `Decimal` e ponto decimal, sem conversão por `float`:
 
 ```python
@@ -226,14 +220,14 @@ assert literal_texto(None) == "NULL"
 ```
 
 - [ ] Abrir o script com `BEGIN;` e `SET LOCAL standard_conforming_strings = on;`. Gerar arquivo UTF-8 e fechá-lo com `COMMIT;`. Não transformar vazio em NULL automaticamente; seguir a matriz e preservar o original quando a conversão perder distinções.
-- [ ] Atribuir IDs determinísticos em ordem de aparição na fonte usando dicionários Python. Inserir entidades de referência primeiro, barragens/observações depois e relações N:N por último. Deduplicar apenas entidades conforme suas chaves definidas, nunca observações sem justificativa.
+- [ ] Atribuir IDs determinísticos em ordem de aparição usando dicionários Python. Inserir dimensões, barragem, registro_origem, campo_origem e valor_origem, nessa ordem. Deduplicar dimensões conforme suas chaves e manter um id_registro por linha.
 - [ ] Não usar `ON CONFLICT DO NOTHING` como forma de esconder duplicatas. Se inserir IDs explícitos em colunas identity, ajustar suas sequências ao maior ID após a carga.
 - [ ] Gerar comentários curtos com fonte, contagem, codificação e tratamento de capacidade. Inserir comentário SQL com os nomes reais da equipe; ausência dos nomes bloqueia apenas a versão final de entrega.
 - [ ] Executar a carga no banco de teste que recebeu o DDL. Corrigir erros na geração, não editar manualmente centenas de INSERTs que serão sobrescritos.
 - [ ] Gerar novamente e comparar os dois resultados: mesmo CSV e mesmo mapeamento devem produzir o mesmo SQL.
 - [ ] **Aceite:** apenas DDL e carga bastam para popular o banco; nenhuma linha ignorada; todas as relações e constantes são carregadas; geração reproduzível.
 
-## Tarefa 5 — Verificar integralidade e reprodução
+### Task 5 — Verificar integralidade e reprodução
 
 **Files:** criar `sql/03_validacao.sql`, `sql/06_exportacao_conferencia.sql`, `scripts/03_conferir_dados.py`, `docs/04_guia_execucao.md`, `docs/08_resultados_validacao.md` e `README.md`.
 
@@ -243,14 +237,14 @@ assert literal_texto(None) == "NULL"
 - [ ] Executar em banco de teste novo, com interrupção ao primeiro erro:
 
 ```bash
-psql -d barragens_ana_teste -v ON_ERROR_STOP=1 -f sql/01_criacao.sql
-psql -d barragens_ana_teste -v ON_ERROR_STOP=1 -f sql/02_carga.sql
-psql -d barragens_ana_teste -v ON_ERROR_STOP=1 -f sql/03_validacao.sql
+  /Library/PostgreSQL/18/bin/psql -d barragens_ana_teste -v ON_ERROR_STOP=1 -f sql/01_criacao.sql
+  /Library/PostgreSQL/18/bin/psql -d barragens_ana_teste -v ON_ERROR_STOP=1 -f sql/02_carga.sql
+  /Library/PostgreSQL/18/bin/psql -d barragens_ana_teste -v ON_ERROR_STOP=1 -f sql/03_validacao.sql
 ```
 
 - [ ] Explicar também o fluxo no pgAdmin: selecionar banco vazio, abrir Query Tool, executar integralmente `01_criacao.sql`, depois `02_carga.sql`, depois validação. Não incluir comandos específicos de psql nos dois scripts de entrega.
-- [ ] Escrever validações de quantidade de observações, unicidade das chaves, ausência de referências órfãs, cobertura de relações N:N e campos vazios/constantes. Totais por tabela de domínio devem corresponder às chaves distintas do CSV, não necessariamente a 887.
-- [ ] Construir uma consulta de reconstrução com os nomes definitivos da tarefa 2. Ela deve devolver as colunas originais na ordem do cabeçalho e cada observação na ordem original. Usar LEFT JOIN para preservar ausências; agregação ordenada apenas se houver campo multivalorado real.
+- [ ] Validar 887 barragens, 887 registros de origem, 33 campos e 29.271 células, unicidade das chaves, FKs sem órfãos e campos vazios/constantes. Totais de dimensões correspondem aos rótulos distintos não vazios, não necessariamente a 887.
+- [ ] Reconstruir usando registro_origem, valor_origem e campo_origem: cabeçalhos por nome_original, células por ordem_coluna, linhas por numero_linha. Preservar vazios e texto literal; comparar todas as 29.271 células.
 - [ ] Exportar o resultado para CSV UTF-8, preservando texto vazio e NULL com convenção explícita que evite colisão com valores reais. Ler a exportação e a fonte com `csv.reader`. Comparar listas completas de linhas e células, não somente contagens:
 
 ```python
@@ -276,22 +270,23 @@ def comparar(cabecalho_original, linhas_originais,
 - [ ] Executar testes negativos separadamente e registrar erro esperado/obtido, sem deixá-los dentro da carga. Registrar resultados reais e diferenças; não declarar sucesso se houver divergência.
 - [ ] **Aceite:** zero diferenças entre células reconstruídas e originais; quantidades conferidas; DDL/carga sem erro; restrições verificadas; limitações resolvidas ou explicitamente registradas como impeditivas.
 
-## Tarefa 6 — Preparar explicação e consultas simples
+### Task 6 — Preparar explicação e consultas simples
 
 **Files:** criar `sql/04_consultas_treino.sql`, `docs/05_roteiro_apresentacao.md`, `docs/06_guia_consultas.md`, `apresentacao/01_resumo_apresentacao.md` e `apresentacao/02_perguntas_simuladas.md`.
 
 **Interfaces:** consome o esquema e os resultados validados; produz consultas executáveis no banco real, explicadas em português, e roteiro coerente com as decisões efetivamente implementadas.
 
-- [ ] Criar pelo menos dez exercícios: total de barragens; quantidade por UF; filtro por município/UF; altura com ordenação; risco e dano potencial; plano de segurança; PAE; empreendedor; região hidrográfica; comparação de duas categorias com JOIN e GROUP BY. Ajustar nomes e categorias aos dados reais, sem inventar valores como “alto” se a fonte usa outro texto.
+- [ ] Criar pelo menos dez exercícios com o esquema definitivo: total em barragem; contagem por uf via municipio; filtro por municipio.nome e uf.sigla; alturas; risco/dano; plano; PAE; empreendedor; regiao_hidrografica; comparação de categorias com JOIN e GROUP BY. Ajustar categorias aos dados reais.
 - [ ] Cada exercício deve conter pergunta, SQL completo, resultado real resumido e explicação de cada cláusula. Exemplo inicial de sintaxe a adaptar ao esquema definitivo: `SELECT COUNT(*) AS total FROM barragem;` — contar observações em vez de entidades se a tarefa 2 identificar múltiplas observações por barragem.
-- [ ] Nas perguntas sobre capacidade, separar medidas com unidade comprovada. Não ranquear valores de unidades desconhecidas como se fossem comparáveis. Acrescentar uma consulta que mostre os registros ambíguos e sua representação original.
-- [ ] Ensinar ordem básica de construção: escolher tabelas e JOINs, filtro, agrupamento, agregação, ordenação e limite. Incluir erro comum de COUNT após relação N:N e explicar a diferença entre COUNT(*) e COUNT(DISTINCT id).
+- [ ] Para capacidade, consultar barragem.capacidade_reservatorio_texto e capacidade_reservatorio_padronizada; esta fica NULL enquanto unidade não for confirmada. Não comparar ou ranquear como medida conhecida.
+- [ ] Ensinar ordem básica de construção: escolher tabelas e JOINs, filtro, agrupamento, agregação, ordenação e limite. Incluir erro comum de COUNT após JOIN com proveniência 1:N: COUNT(*) conta células e COUNT(DISTINCT b.cod_snisb) conta barragens.
 - [ ] Criar perguntas sem gabarito em `02_perguntas_simuladas.md`; deixar respostas no guia e no SQL de treino para permitir tentativa independente.
 - [ ] Preparar roteiro sugerido de 6–8 minutos, ajustável ao tempo dado pelo professor: contexto, diagrama e dependências, restrições, carga/conferência, constantes/capacidade e consultas. Essa duração é recomendação, não exigência do documento.
 - [ ] Distribuir a explicação entre os integrantes reais, garantindo que todos pratiquem SELECT, JOIN, filtro, agrupamento e ordenação. Simular duas perguntas escritas na hora, individualmente ou em dupla.
+- [ ] Exemplos com nomes finais: SELECT COUNT(*) AS total FROM barragem; e SELECT u.sigla, COUNT(*) FROM barragem b JOIN municipio m ON m.id_municipio = b.id_municipio JOIN uf u ON u.sigla = m.uf_sigla GROUP BY u.sigla ORDER BY COUNT(*) DESC.
 - [ ] **Aceite:** todas as consultas executam no banco real; resultados coerentes; explicação da 3FN por tabela; equipe entende a carga e consegue construir consultas sem copiar o gabarito.
 
-## Tarefa 7 — Fechar a entrega e ensaiar
+### Task 7 — Fechar a entrega e ensaiar
 
 **Files:** criar `entrega/01_criacao.sql`, `entrega/02_carga.sql`, `entrega/LEIA_ME.md` e `projeto-barragens-ana.zip`; atualizar checklist, README e resultados.
 
@@ -320,7 +315,7 @@ Se o CSV chegar tarde, priorizar DDL, carga, conferência e treino. Reduzir acab
 ## Revisão deste planejamento
 
 - Cobertura: todas as exigências explícitas do enunciado têm tarefa e evidência na matriz.
-- Incertezas: CSV ausente, nomes dos integrantes e ambiente PostgreSQL ainda não confirmado. Nenhuma delas foi preenchida com informação inventada.
+- Incertezas: serviço PostgreSQL não está ativo; executar a verificação numa instância isolada de teste. A publicação do branch depende da permissão de escrita no GitHub.
 - Dependências: modelagem precede DDL; DDL precede carga; comparação precede entrega; consultas usam nomes definitivos da modelagem.
 - Limite técnico desta versão: DDL completo e consultas definitivas dependem dos cabeçalhos e valores reais. A tarefa 2 deve tornar esses nomes explícitos antes de iniciar a tarefa 3.
 - Estado: **plano aprovado; execução em curso pelo GPT Luna; publicação remota depende de permissão de escrita**.
