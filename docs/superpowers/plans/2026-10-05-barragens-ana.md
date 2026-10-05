@@ -276,15 +276,15 @@ def comparar(cabecalho_original, linhas_originais,
 
 **Interfaces:** consome o esquema e os resultados validados; produz consultas executáveis no banco real, explicadas em português, e roteiro coerente com as decisões efetivamente implementadas.
 
-- [ ] Criar pelo menos dez exercícios com o esquema definitivo: total em barragem; contagem por uf via municipio; filtro por municipio.nome e uf.sigla; alturas; risco/dano; plano; PAE; empreendedor; regiao_hidrografica; comparação de categorias com JOIN e GROUP BY. Ajustar categorias aos dados reais.
-- [ ] Cada exercício deve conter pergunta, SQL completo, resultado real resumido e explicação de cada cláusula. Exemplo inicial de sintaxe a adaptar ao esquema definitivo: `SELECT COUNT(*) AS total FROM barragem;` — contar observações em vez de entidades se a tarefa 2 identificar múltiplas observações por barragem.
-- [ ] Para capacidade, consultar barragem.capacidade_reservatorio_texto e capacidade_reservatorio_padronizada; esta fica NULL enquanto unidade não for confirmada. Não comparar ou ranquear como medida conhecida.
-- [ ] Ensinar ordem básica de construção: escolher tabelas e JOINs, filtro, agrupamento, agregação, ordenação e limite. Incluir erro comum de COUNT após JOIN com proveniência 1:N: COUNT(*) conta células e COUNT(DISTINCT b.cod_snisb) conta barragens.
-- [ ] Criar perguntas sem gabarito em `02_perguntas_simuladas.md`; deixar respostas no guia e no SQL de treino para permitir tentativa independente.
-- [ ] Preparar roteiro sugerido de 6–8 minutos, ajustável ao tempo dado pelo professor: contexto, diagrama e dependências, restrições, carga/conferência, constantes/capacidade e consultas. Essa duração é recomendação, não exigência do documento.
-- [ ] Distribuir a explicação entre os integrantes reais, garantindo que todos pratiquem SELECT, JOIN, filtro, agrupamento e ordenação. Simular duas perguntas escritas na hora, individualmente ou em dupla.
-- [ ] Exemplos com nomes finais: SELECT COUNT(*) AS total FROM barragem; e SELECT u.sigla, COUNT(*) FROM barragem b JOIN municipio m ON m.id_municipio = b.id_municipio JOIN uf u ON u.sigla = m.uf_sigla GROUP BY u.sigla ORDER BY COUNT(*) DESC.
-- [ ] **Aceite:** todas as consultas executam no banco real; resultados coerentes; explicação da 3FN por tabela; equipe entende a carga e consegue construir consultas sem copiar o gabarito.
+- [x] Criar 14 exercícios com o esquema definitivo, cobrindo total, UF, município+UF, alturas, risco/dano, plano, PAE, empreendedor, região, comparação agrupada, proveniência e duas perguntas simuladas.
+- [x] Incluir pergunta, SQL completo, resultado conferido e explicação cláusula por cláusula para cada exercício em `docs/06_guia_consultas.md`; duplicar SQL e resultado resumido em `sql/04_consultas_treino.sql`.
+- [x] Consultar capacidade apenas como texto e campo padronizado NULL; não converter nem classificar como medida conhecida.
+- [x] Explicar a sequência de construção SQL e que JOIN com proveniência conta 29.271 células, enquanto códigos distintos contam 887 barragens.
+- [x] Criar duas perguntas simuladas sem respostas em `apresentacao/02_perguntas_simuladas.md`; respostas completas estão no guia e no SQL de treino.
+- [x] Preparar roteiro sugerido de 7 minutos cobrindo contexto, modelo, restrições, carga/conferência, constantes/capacidade e consultas.
+- [x] Distribuir a prática: Alexandre (exercícios 2 e 3), Enrique (8) e Renan (10), cada um exercitando SELECT, JOIN, WHERE, GROUP BY e ORDER BY.
+- [x] Usar nomes, tabelas e categorias conforme o esquema final; explicar a 3FN das 11 tabelas no guia.
+- [ ] **Aceite oral:** consultas e resultados foram validados no PostgreSQL; falta ensaio real dos integrantes para confirmar que todos conseguem construir consultas sem o gabarito.
 
 ### Task 7 — Fechar a entrega e ensaiar
 
