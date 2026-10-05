@@ -1,0 +1,27 @@
+ Barragens de Usinas Hidrelétricas (ANA)
+Atividade avaliativa em equipes (até 4 pessoas)
+Contexto  Sua equipe recebeu o arquivo ana_barragens_hidreletricas.csv. Ele foi extraído do Sistema Nacional de Informações sobre Segurança de Barragens (SNISB), mantido pela Agência Nacional de Águas e Saneamento Básico (ANA). O dataset tem 887 barragens de usinas hidrelétricas submetidas à Política Nacional de Segurança de Barragens, em 33 colunas, com informações como:
+	•	identificação da barragem e do empreendedor;
+	•	localização (UF, município e coordenadas);
+	•	altura e capacidade do reservatório;
+	•	material de construção e fase de vida;
+	•	autorização de operação;
+	•	curso d'água, região hidrográfica, comitês de bacia e unidade de gestão;
+	•	existência de plano de segurança e PAE;
+	•	categoria de risco e dano potencial.
+Tarefa  Projetar e implementar um banco de dados em PostgreSQL a partir desse CSV, aplicando boas práticas de modelagem. O arquivo deve ser transformado em um banco normalizado até a 3ª Forma Normal e totalmente populado, sem perda de nenhuma informação da planilha original.
+Pontos de atenção
+	•	Há informações geográficas e hidrográficas em diferentes níveis (município, UF, curso d'água, região hidrográfica, comitês). Analisem as dependências entre elas antes de decidir as tabelas.
+	•	Algumas colunas têm o mesmo valor em todas as linhas. Discutam se elas devem virar tabela, virar constante ou ser mantidas, e justifiquem.
+	•	A coluna de capacidade do reservatório tem inconsistências de unidade na fonte oficial. Registrem o problema e expliquem como o trataram.
+Critérios de avaliação  a) Script de criação (DDL): 1,5 ponto. Tabelas normalizadas até a 3FN, chaves primárias e estrangeiras, restrições (NOT NULL, UNIQUE, CHECK) e índices essenciais.  b) Carga dos dados: 1,0 ponto. Popular todas as tabelas com todas as informações do CSV. É permitido usar Python ou Excel como apoio, mas a entrega deve ser um script SQL executável.  c) Consultas na apresentação: 1,5 ponto. O professor fará 2 perguntas sobre os dados. Cada aluno, individualmente ou em dupla, responderá com uma consulta SQL escrita na hora.
+Entrega
+	•	Script DDL com a criação de todas as tabelas, relacionamentos, chaves e restrições.
+	•	Script de carga (INSERT ou COPY) que popule o banco a partir do zero.
+	•	Um comentário na entrega informando os membros da equipe.
+Os scripts devem rodar em sequência, em um banco vazio, sem erros.
+Apresentação:   A equipe apresentará o banco ao professor e explicará as decisões de modelagem: por que cada tabela existe, como as dependências foram eliminadas e como os dados foram carregados.
+
+
+
+
