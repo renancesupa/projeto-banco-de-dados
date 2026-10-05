@@ -96,7 +96,7 @@ def gerar_sql(caminho_csv=CSV_PADRAO, caminho_mapa=MAPA_PADRAO):
     saida = [
         "BEGIN;",
         "SET LOCAL standard_conforming_strings = on;",
-        "-- Fonte: dados.originais/ana_barragens_hidreletricas.csv (UTF-8).",
+        "-- Fonte: dados/originais/ana_barragens_hidreletricas.csv (UTF-8).",
         "-- 887 registros, 33 campos e 29.271 células originais; vazios preservados como ''.",
         "-- Capacidade mantida como texto; valor padronizado NULL por ausência de unidade comprovada.",
         f"-- Equipe: {EQUIPE}.",
