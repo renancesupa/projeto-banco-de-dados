@@ -126,10 +126,10 @@ Durante o desenvolvimento, usar as pastas diretamente na raiz do workspace. Cria
 
 **Interfaces:** recebe o CSV original e os nomes da equipe; produz cabeçalhos reais, número de registros, identificação da codificação e do delimitador, contagens de vazios e valores distintos. O mapeamento deve conter exatamente uma entrada por coluna original, na mesma ordem do cabeçalho.
 
-- [ ] Obter o CSV fornecido pelo professor e os nomes dos integrantes. Procurar nos arquivos disponibilizados na sessão; se ausente, pedir o arquivo ao usuário. A ausência dos nomes não impede a análise.
-- [ ] Copiar o CSV sem modificar seu conteúdo; registrar origem, data e SHA-256 no perfil. Manter a cópia original intacta.
-- [ ] Identificar codificação e delimitador, testar leitura e verificar se as linhas têm a mesma quantidade de campos do cabeçalho. Falha de leitura deve interromper a carga, não ignorar linhas.
-- [ ] Implementar análise com biblioteca padrão. Depois de identificar a codificação e o delimitador, usar a leitura explícita abaixo, substituindo os dois parâmetros pelos valores confirmados:
+- [x] Obter o CSV fornecido pelo professor e os nomes dos integrantes. Procurar nos arquivos disponibilizados na sessão; se ausente, pedir o arquivo ao usuário. A ausência dos nomes não impede a análise.
+- [x] Copiar o CSV sem modificar seu conteúdo; registrar origem, data e SHA-256 no perfil. Manter a cópia original intacta.
+- [x] Identificar codificação e delimitador, testar leitura e verificar se as linhas têm a mesma quantidade de campos do cabeçalho. Falha de leitura deve interromper a carga, não ignorar linhas.
+- [x] Implementar análise com biblioteca padrão. Depois de identificar a codificação e o delimitador, usar a leitura explícita abaixo, substituindo os dois parâmetros pelos valores confirmados:
 
 ```python
 import csv
@@ -153,11 +153,11 @@ def resumir_coluna(linhas, indice):
     }
 ```
 
-- [ ] Registrar 887/33 como contagens esperadas, confrontá-las com as contagens obtidas e explicar qualquer divergência. Registrar cabeçalhos duplicados se existirem; identificá-los também pela posição da coluna.
-- [ ] Inspecionar identificadores repetidos, registros repetidos, campos multivalorados, coordenadas, números com vírgula/ponto e marcadores textuais de ausência. Preservar diferenças entre vazio, “não informado”, “não se aplica”, zero e “não”.
-- [ ] Identificar as colunas constantes, inclusive constantes vazias. Listar o valor observado e a decisão proposta para cada uma.
-- [ ] Criar a matriz de cobertura com campos `ordem_coluna`, `coluna_original`, `tabela_destino`, `coluna_destino`, `tipo`, `tratamento`, `como_reconstruir`. Completar os destinos na tarefa 2, antes de escrever DDL.
-- [ ] **Aceite:** leitura completa sem linha ignorada; perfil de todas as colunas; hash registrado; entradas disponíveis. Não avançar para modelagem definitiva sem esse aceite.
+- [x] Registrar 887/33 como contagens esperadas, confrontá-las com as contagens obtidas e explicar qualquer divergência. Registrar cabeçalhos duplicados se existirem; identificá-los também pela posição da coluna.
+- [x] Inspecionar identificadores repetidos, registros repetidos, campos multivalorados, coordenadas, números com vírgula/ponto e marcadores textuais de ausência. Preservar diferenças entre vazio, “não informado”, “não se aplica”, zero e “não”.
+- [x] Identificar as colunas constantes, inclusive constantes vazias. Listar o valor observado e a decisão proposta para cada uma.
+- [x] Criar a matriz de cobertura com campos `ordem_coluna`, `coluna_original`, `tabela_destino`, `coluna_destino`, `tipo`, `tratamento`, `como_reconstruir`. Completar os destinos na tarefa 2, antes de escrever DDL.
+- [x] **Aceite:** leitura completa sem linha ignorada; perfil de todas as colunas; hash registrado; entradas disponíveis. Não avançar para modelagem definitiva sem esse aceite.
 
 ## Tarefa 2 — Definir a modelagem e provar a 3FN
 
