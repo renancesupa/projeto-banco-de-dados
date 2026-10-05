@@ -20,5 +20,10 @@ Com `psql`, configure a conexão para seu banco de teste e execute cada arquivo 
 
 - Modelo e justificativas: `docs/01_modelagem.md`, `docs/02_dicionario_dados.md` e `docs/03_decisoes_dados.md`.
 - Instruções completas de execução: `docs/04_guia_execucao.md`.
+- Entrega obrigatória, com instruções e nomes da equipe: `entrega/`.
+- Roteiro de apresentação e perguntas de ensaio: `docs/05_roteiro_apresentacao.md` e `apresentacao/`.
+- Consultas de treino com gabarito: `sql/04_consultas_treino.sql` e `docs/06_guia_consultas.md`.
 - Evidências da validação realizada: `docs/08_resultados_validacao.md`.
 - Checklist da avaliação: `docs/07_checklist_avaliacao.md`.
+
+O pacote organizado para compartilhar é `projeto-barragens-ana.zip`. Ele reúne os scripts, o CSV original, a análise e os materiais de modelagem e apresentação, sem incluir o repositório Git ou arquivos temporários.

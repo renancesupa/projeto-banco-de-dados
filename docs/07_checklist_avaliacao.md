@@ -10,9 +10,9 @@ Fonte: enunciado em `docs/referencias/enunciado_barragens_ana.txt`.
 | DDL e 3FN (1,5 ponto) | DDL, dependências, chaves, restrições e índices | Modelagem e DDL documentados; integridade e unicidade confirmadas na base descartável. |
 | Carga completa (1,0 ponto) | Script SQL executável com todas as informações do CSV | Carga validada: 887 barragens e 29.271 valores de proveniência; zero diferenças no round-trip. |
 | Consultas na apresentação (1,5 ponto) | Cada aluno responde perguntas com SQL escrito na hora | Tarefa 6 produziu 14 consultas conferidas, roteiro por integrante e duas perguntas de ensaio; ensaio oral ainda pendente. |
-| Comentário com integrantes | Nomes da equipe na entrega | Nomes recebidos; incluir nos scripts finais na tarefa 4. |
+| Comentário com integrantes | Nomes da equipe na entrega | Alexandre Arthur, Enrique Luis e Renan Gomes aparecem nos comentários dos dois scripts em `entrega/`. |
 | Explicar decisões de modelagem | Justificativas por tabela, dependências, constantes e capacidade | Justificativas e dependências documentadas em `docs/01_modelagem.md`, `docs/02_dicionario_dados.md` e `docs/03_decisoes_dados.md`. |
-| Execução em banco vazio | DDL e carga executados em sequência sem erros | DDL, carga e validação executados em sequência sem erro em base descartável; evidência em `docs/08_resultados_validacao.md`. |
+| Execução em banco vazio | DDL e carga executados em sequência sem erros | Scripts da entrega executados em segunda base vazia, seguidos de validação; evidência em `docs/08_resultados_validacao.md`. |
 
 ## Cobertura da Tarefa 1
 
@@ -43,6 +43,15 @@ Fonte: enunciado em `docs/referencias/enunciado_barragens_ana.txt`.
 - [x] Exercícios incluem perguntas, SQL, resultados resumidos e explicação cláusula por cláusula; capacidade permanece textual e sem unidade presumida.
 - [x] Roteiro de 6–8 minutos distribui a prática SQL entre Alexandre Arthur, Enrique Luis e Renan Gomes; duas perguntas sem gabarito estão prontas para ensaio.
 - [ ] Ensaio oral da equipe para confirmar autonomia ao escrever consultas na hora.
+
+## Cobertura da Tarefa 7
+
+- [x] Os scripts finais em `entrega/` têm os comentários com os nomes reais da equipe.
+- [x] `entrega/01_criacao.sql` e `entrega/02_carga.sql` são idênticos aos scripts canônicos em `sql/`.
+- [x] As cópias foram executadas em uma segunda base vazia; contagens, chaves, FKs e cobertura validadas em `docs/08_resultados_validacao.md`.
+- [x] `entrega/LEIA_ME.md` informa equipe, PostgreSQL 18.4, ordem de execução e material de apoio.
+- [x] O ZIP inclui o projeto organizado e exclui Git, relatórios internos e arquivos temporários.
+- [ ] A equipe ainda precisa ensaiar a abertura dos arquivos e responder perguntas SQL sem gabarito.
 
 ## Pendências para a entrega final
 

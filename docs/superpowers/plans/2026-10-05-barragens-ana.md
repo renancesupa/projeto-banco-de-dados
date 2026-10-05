@@ -292,14 +292,14 @@ def comparar(cabecalho_original, linhas_originais,
 
 **Interfaces:** recebe arquivos canônicos aprovados; produz pacote final organizado com instruções e comentário de integrantes. Nenhum arquivo de teste negativo faz parte da sequência obrigatória de entrega.
 
-- [ ] Verificar que há nomes reais de até quatro integrantes no comentário SQL. Não finalizar o pacote com nomes genéricos ou campos em branco.
-- [ ] Copiar os dois scripts de `sql/` para `entrega/` e confirmar que são idênticos às versões validadas.
-- [ ] Executar essas cópias em um segundo banco de teste novo. Confirmar que não dependem do CSV, de Python, de caminho absoluto, do banco anterior ou de extensão não instalada.
-- [ ] Atualizar o checklist critério por critério com caminhos e resultados. Registrar contagens reais, zero diferenças de reconstrução e tratamento da capacidade.
-- [ ] Criar `LEIA_ME.md` com nomes, PostgreSQL utilizado e ordem de execução. Separar claramente entrega obrigatória e material auxiliar de treino/documentação.
-- [ ] Criar o ZIP organizado e conferir o conteúdo. Incluir original, scripts, documentação e apresentação; excluir temporários, credenciais, dependências e ambientes locais.
+- [x] Verificar que há nomes reais no comentário dos dois scripts obrigatórios de `entrega/`.
+- [x] Copiar os dois scripts de `sql/` para `entrega/`; hashes SHA-256 confirmam cópias idênticas.
+- [x] Executar as cópias em um segundo banco de teste novo; DDL, carga e validação concluíram sem erro, sem depender do CSV, Python ou caminho absoluto.
+- [x] Atualizar o checklist critério por critério com caminhos e evidências em `docs/08_resultados_validacao.md`, inclusive contagens, reconstrução e capacidade.
+- [x] Criar `entrega/LEIA_ME.md` com nomes, PostgreSQL 18.4 e ordem de execução, separando entrega obrigatória do material de apoio.
+- [x] Criar e inspecionar ZIP organizado. Inclui original, scripts, documentação e apresentação; exclui `.git`, `.superpowers` e CSV temporário.
 - [ ] Ensaiar a abertura dos arquivos e o roteiro em ambiente disponível na apresentação. Manter o SQL de entrega acessível separadamente do ZIP.
-- [ ] **Aceite final:** duas execuções completas em bancos vazios; integralidade comprovada; nomes reais; arquivos organizados; duas perguntas simuladas por aluno ou dupla; nenhum requisito obrigatório pendente.
+- [ ] **Aceite final:** a validação técnica e o pacote estão prontos; o ensaio oral e a resposta da equipe às perguntas sem gabarito ainda precisam ocorrer.
 
 ## Cronograma até quinta-feira
 
