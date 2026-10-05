@@ -204,9 +204,9 @@ Procedência: registro_origem(id_registro PK, numero_linha UNIQUE NOT NULL, cod_
 
 **Interfaces:** recebe CSV e mapeamento aprovados; produz SQL com todos os valores incorporados, sem depender de Python, CSV externo ou caminho do computador durante a execução pelo professor.
 
-- [ ] Usar `INSERT INTO tabela (colunas...) VALUES (...);`, com colunas explícitas. É suficiente para 887 registros e mais fácil de demonstrar que um fluxo de importação dependente de caminhos.
-- [ ] Gerar 887 linhas de origem, 33 definições de campo e exatamente 29.271 valores de origem, incluindo todos os campos vazios. A carga deve preservar os 33 textos originais como strings CSV.
-- [ ] Criar verificações do escape antes de gerar a carga. Usar o padrão abaixo para texto e ausência; números válidos devem ter serialização própria com `Decimal` e ponto decimal, sem conversão por `float`:
+- [x] Usar `INSERT INTO tabela (colunas...) VALUES (...);`, com colunas explícitas. É suficiente para 887 registros e mais fácil de demonstrar que um fluxo de importação dependente de caminhos.
+- [x] Gerar 887 linhas de origem, 33 definições de campo e exatamente 29.271 valores de origem, incluindo todos os campos vazios. A carga deve preservar os 33 textos originais como strings CSV.
+- [x] Criar verificações do escape antes de gerar a carga. Usar o padrão abaixo para texto e ausência; números válidos devem ter serialização própria com `Decimal` e ponto decimal, sem conversão por `float`:
 
 ```python
 def literal_texto(valor):
@@ -219,13 +219,13 @@ assert literal_texto("") == "''"
 assert literal_texto(None) == "NULL"
 ```
 
-- [ ] Abrir o script com `BEGIN;` e `SET LOCAL standard_conforming_strings = on;`. Gerar arquivo UTF-8 e fechá-lo com `COMMIT;`. Não transformar vazio em NULL automaticamente; seguir a matriz e preservar o original quando a conversão perder distinções.
-- [ ] Atribuir IDs determinísticos em ordem de aparição usando dicionários Python. Inserir dimensões, barragem, registro_origem, campo_origem e valor_origem, nessa ordem. Deduplicar dimensões conforme suas chaves e manter um id_registro por linha.
-- [ ] Não usar `ON CONFLICT DO NOTHING` como forma de esconder duplicatas. Se inserir IDs explícitos em colunas identity, ajustar suas sequências ao maior ID após a carga.
-- [ ] Gerar comentários curtos com fonte, contagem, codificação e tratamento de capacidade. Inserir comentário SQL com os nomes reais da equipe; ausência dos nomes bloqueia apenas a versão final de entrega.
-- [ ] Executar a carga no banco de teste que recebeu o DDL. Corrigir erros na geração, não editar manualmente centenas de INSERTs que serão sobrescritos.
-- [ ] Gerar novamente e comparar os dois resultados: mesmo CSV e mesmo mapeamento devem produzir o mesmo SQL.
-- [ ] **Aceite:** apenas DDL e carga bastam para popular o banco; nenhuma linha ignorada; todas as relações e constantes são carregadas; geração reproduzível.
+- [x] Abrir o script com `BEGIN;` e `SET LOCAL standard_conforming_strings = on;`. Gerar arquivo UTF-8 e fechá-lo com `COMMIT;`. Não transformar vazio em NULL automaticamente; seguir a matriz e preservar o original quando a conversão perder distinções.
+- [x] Atribuir IDs determinísticos em ordem de aparição usando dicionários Python. Inserir dimensões, barragem, registro_origem, campo_origem e valor_origem, nessa ordem. Deduplicar dimensões conforme suas chaves e manter um id_registro por linha.
+- [x] Não usar `ON CONFLICT DO NOTHING` como forma de esconder duplicatas. Se inserir IDs explícitos em colunas identity, ajustar suas sequências ao maior ID após a carga.
+- [x] Gerar comentários curtos com fonte, contagem, codificação e tratamento de capacidade. Inserir comentário SQL com os nomes reais da equipe; ausência dos nomes bloqueia apenas a versão final de entrega.
+- [x] Executar a carga no banco de teste que recebeu o DDL. Corrigir erros na geração, não editar manualmente centenas de INSERTs que serão sobrescritos.
+- [x] Gerar novamente e comparar os dois resultados: mesmo CSV e mesmo mapeamento devem produzir o mesmo SQL.
+- [x] **Aceite:** apenas DDL e carga bastam para popular o banco; nenhuma linha ignorada; todas as relações e constantes são carregadas; geração reproduzível.
 
 ### Task 5 — Verificar integralidade e reprodução
 
