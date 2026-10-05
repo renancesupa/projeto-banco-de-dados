@@ -233,19 +233,19 @@ assert literal_texto(None) == "NULL"
 
 **Interfaces:** recebe banco carregado e matriz; produz exportação com as colunas originais, na ordem original e ordenada pela linha de origem, e relatório de diferenças. Banco vazio significa banco de teste dedicado, não reset destrutivo do banco de uso.
 
-- [ ] Documentar a versão de PostgreSQL realmente usada e o cliente. Se PostgreSQL não estiver disponível, comunicar essa limitação e resolver o ambiente antes de afirmar aprovação dos testes.
-- [ ] Executar em banco de teste novo, com interrupção ao primeiro erro:
+- [x] Documentar PostgreSQL 18.4 e `psql` 18.4, confirmados durante a validação.
+- [x] Executar em banco de teste novo, com interrupção ao primeiro erro (instância isolada em `127.0.0.1:55432`):
 
 ```bash
-  /Library/PostgreSQL/18/bin/psql -d barragens_ana_teste -v ON_ERROR_STOP=1 -f sql/01_criacao.sql
-  /Library/PostgreSQL/18/bin/psql -d barragens_ana_teste -v ON_ERROR_STOP=1 -f sql/02_carga.sql
-  /Library/PostgreSQL/18/bin/psql -d barragens_ana_teste -v ON_ERROR_STOP=1 -f sql/03_validacao.sql
+  psql -h 127.0.0.1 -p 55432 -d barragens_ana_t5_keys -v ON_ERROR_STOP=1 -f sql/01_criacao.sql
+  psql -h 127.0.0.1 -p 55432 -d barragens_ana_t5_keys -v ON_ERROR_STOP=1 -f sql/02_carga.sql
+  psql -h 127.0.0.1 -p 55432 -d barragens_ana_t5_keys -v ON_ERROR_STOP=1 -f sql/03_validacao.sql
 ```
 
-- [ ] Explicar também o fluxo no pgAdmin: selecionar banco vazio, abrir Query Tool, executar integralmente `01_criacao.sql`, depois `02_carga.sql`, depois validação. Não incluir comandos específicos de psql nos dois scripts de entrega.
-- [ ] Validar 887 barragens, 887 registros de origem, 33 campos e 29.271 células, unicidade das chaves, FKs sem órfãos e campos vazios/constantes. Totais de dimensões correspondem aos rótulos distintos não vazios, não necessariamente a 887.
-- [ ] Reconstruir usando registro_origem, valor_origem e campo_origem: cabeçalhos por nome_original, células por ordem_coluna, linhas por numero_linha. Preservar vazios e texto literal; comparar todas as 29.271 células.
-- [ ] Exportar o resultado para CSV UTF-8, preservando texto vazio e NULL com convenção explícita que evite colisão com valores reais. Ler a exportação e a fonte com `csv.reader`. Comparar listas completas de linhas e células, não somente contagens:
+- [x] Explicar o fluxo no pgAdmin: selecionar banco vazio, abrir Query Tool, executar integralmente criação, carga e validação nesta ordem. Os scripts de entrega não contêm comandos específicos de psql.
+- [x] Validar 887 barragens, 887 registros de origem, 33 campos e 29.271 células, unicidade das chaves, todas as FKs sem órfãos e perfil de vazios/constantes. Os distintos excluem vazios.
+- [x] Reconstruir com `registro_origem`, `valor_origem` e `campo_origem`, preservando cabeçalhos/ordem, texto literal, vazios e ordem de linha; comparar todas as células.
+- [x] Exportar para CSV UTF-8 com marcador de NULL verificado contra a fonte. O comparador lê exportação e fonte com `csv.reader` e compara cabeçalho, linhas e cada célula. Duas rodadas produziram zero diferenças; detalhes e hash em `docs/08_resultados_validacao.md`. A comparação integral segue este padrão:
 
 ```python
 def comparar(cabecalho_original, linhas_originais,
@@ -266,9 +266,9 @@ def comparar(cabecalho_original, linhas_originais,
     return diferencas
 ```
 
-- [ ] Conferir novamente o SHA-256 do CSV original. A comparação valida os campos decodificados; o hash comprova que a cópia original permaneceu byte a byte intacta.
-- [ ] Executar testes negativos separadamente e registrar erro esperado/obtido, sem deixá-los dentro da carga. Registrar resultados reais e diferenças; não declarar sucesso se houver divergência.
-- [ ] **Aceite:** zero diferenças entre células reconstruídas e originais; quantidades conferidas; DDL/carga sem erro; restrições verificadas; limitações resolvidas ou explicitamente registradas como impeditivas.
+- [x] Conferir SHA-256 antes/depois; a fonte permaneceu byte a byte intacta.
+- [x] Executar teste negativo separado e registrar retorno e diferença; não houve divergência nas rodadas válidas.
+- [x] **Aceite:** zero diferenças nas duas rodadas; quantidades conferidas; DDL/carga sem erro; restrições verificadas. Evidências em `docs/08_resultados_validacao.md`.
 
 ### Task 6 — Preparar explicação e consultas simples
 
