@@ -63,6 +63,12 @@ Tipos PostgreSQL. Campos opcionais recebem NULL na camada de consulta quando o C
 numero_linha conta o cabeçalho na linha 1 e os registros de dados vão da linha 2 à 888. cod_snisb liga cada registro de origem a uma barragem; essa ligação é 1:1 neste conjunto. valor_original nunca é NULL: ausência no CSV é a string vazia.
 
 Alturas e coordenadas são NUMERIC alimentados com Decimal. Datas ISO são DATE; indicadores com valores true/false são BOOLEAN. Códigos, classificações e nomes ficam em TEXT. O mapeamento campo a campo e a reconstrução estão em dados/analise/mapeamento_colunas.csv.
+
+## Restrições e índices do DDL
+
+As chaves primárias e as restrições UNIQUE são nomeadas `pk_*` e `uq_*` no script `sql/01_criacao.sql`. As FKs também têm nomes `fk_*`; dimensões opcionais de comitê e unidade aceitam NULL. `municipio` tem unicidade natural em `(uf_sigla, nome)`, e `registro_origem` tem `numero_linha` e `cod_snisb` únicos.
+
+`barragem.latitude` e `barragem.longitude` têm os checks `ck_barragem_latitude` (-90 a 90) e `ck_barragem_longitude` (-180 a 180). Os índices complementares `idx_*` cobrem FKs usadas nos JOINs que não são cobertas por índices de PK ou UNIQUE. Por exemplo, o índice de `municipio` começa por `uf_sigla` e o de `valor_origem` começa por `id_registro`; não foram criados índices redundantes para essas FKs.
 ## Matriz das 33 colunas da fonte
 
 | Ordem | Campo original | Destino analítico | Tipo | Reconstrução exata |
