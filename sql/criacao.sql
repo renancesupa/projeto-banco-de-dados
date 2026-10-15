@@ -126,10 +126,3 @@ create table barragem(
     barragem_autuada boolean not null,
     completude_cadastro varchar not null
 );
-
-
-
-
-
-
-
